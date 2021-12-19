@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: app-pos
   h2:
     console:
       enabled: true
@@ -10,5 +8,3 @@ spring:
     username: root
     password: root
     driver-class-name: org.h2.Driver
-    profiles:
-      active: test

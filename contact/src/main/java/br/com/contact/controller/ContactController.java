@@ -4,6 +4,7 @@ import br.com.contact.controller.request.ContactRequest;
 import br.com.contact.controller.response.ContactResponse;
 import br.com.contact.model.Contact;
 import br.com.contact.service.ContactService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,7 @@ public class ContactController {
 
     private final ContactService contactService;
 
+    @Autowired
     public ContactController(ContactService contactService) {
         this.contactService = contactService;
     }
@@ -37,13 +39,19 @@ public class ContactController {
     }
 
     @GetMapping("/find-by-name")
-    public Contact getContactByName(@RequestParam String name) {
+    public ContactResponse getContactByName(@RequestParam String name) {
         return this.contactService.getContactByName(name);
     }
 
-    @PutMapping
-    private void updateContact(@RequestBody ContactRequest request) {
-        this.contactService.updateContact(request);
+    @PutMapping("/update-contact")
+    @ResponseStatus(HttpStatus.OK)
+    public void update(@RequestParam Long id, @RequestBody ContactRequest request) {
+        this.contactService.updateContact(id, request);
     }
 
+    @GetMapping("/find-by-id")
+    @ResponseStatus(HttpStatus.OK)
+    public ContactResponse findById(@RequestParam Long id) {
+        return this.contactService.findById(id);
+    }
 }

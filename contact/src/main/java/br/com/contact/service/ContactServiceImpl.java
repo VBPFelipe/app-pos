@@ -5,7 +5,9 @@ import br.com.contact.controller.response.ContactResponse;
 import br.com.contact.repository.ContactRepository;
 import br.com.contact.model.Contact;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 @Service
 public class ContactServiceImpl implements ContactService {
 
+    @Autowired
     private ContactRepository contactRepository;
 
     @Override
@@ -26,17 +29,16 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public Contact getContactByName(String name) {
-        List<Contact> contacts = this.contactRepository.findAll();
-        Contact c = contacts.stream().filter(contact -> contact.getName().equals(name)).findAny().get();
-        return c;
+    public ContactResponse getContactByName(String name) {
+        try {
+            List<Contact> contacts = this.contactRepository.findAll();
+            Contact c = contacts.stream().filter(contact -> contact.getName().equals(name)).findAny().get();
+            return new Contact().convertToResponse(c);
+        } catch (HttpClientErrorException e) {
+            e.printStackTrace();
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
+        }
     }
-
-    @Override
-    public Contact getByName(String name) {
-        return this.contactRepository.findByName(name);
-    }
-
 
     @Override
     public List<ContactResponse> getAllContact() {
@@ -46,7 +48,16 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public void updateContact(ContactRequest request) {
-//        this.contactRepository.;
+    public void updateContact(Long id, ContactRequest request) {
+        if (request == null || id == null) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
+        }
+        Contact contact = new Contact().convertToEntity(request);
+        contact.setId(id);
+        this.contactRepository.save(contact);
+    }
+
+    public ContactResponse findById(Long id) {
+        return new Contact().convertToResponse(this.contactRepository.findById(id).orElse(null));
     }
 }
